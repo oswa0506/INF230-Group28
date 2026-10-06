@@ -1,0 +1,363 @@
+@prefix :      <http://www.inf230.no/explainability#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix dolce: <http://www.loa-cnr.it/ontologies/DOLCE-Lite.owl#> .   # DOLCE-Lite, not DOLCE-UltraLite (dul)
+
+#################################################################
+#    Ontology header
+#################################################################
+
+<http://www.inf230.no/explainability> rdf:type owl:Ontology ;
+    rdfs:label "Explainability and Explanations Ontology"@en ;
+    rdfs:comment "Domain ontology for explanations and explainability. INF230 worksheet B, group 28. Scope = what is needed to express competency questions KS1-KS6 (personas: Oswa, AI developer; Ilwaad, researcher; Mehdi, teacher)."@en ;
+    owl:versionInfo "0.1 (first working version, B.3)" .
+
+#################################################################
+#    Annotation properties
+#################################################################
+
+# skos:definition is declared so that it is a proper OWL annotation property (keeps the ontology in OWL 2 DL).
+skos:definition rdf:type owl:AnnotationProperty .
+
+# DOLCE alignment (B.2). Stated as an annotation, so DOLCE does not have to be imported
+# and no DOLCE axioms influence reasoning. Only the five root classes carry it;
+# their subclasses inherit the alignment.
+:subsumedUnder rdf:type owl:AnnotationProperty ;
+    rdfs:label "subsumed under (DOLCE)"@en ;
+    rdfs:comment "Points from a root class to the DOLCE-Lite universal it is subsumed under."@en .
+
+# KS4 asks how explanation TYPES relate to each other. An object property between
+# individuals cannot say that, so this relation is an annotation between classes.
+# It can still be queried with SPARQL, and it keeps the ontology in OWL 2 DL.
+:canBeReconstructedAs rdf:type owl:AnnotationProperty ;
+    rdfs:label "can be reconstructed as"@en ;
+    rdfs:comment "Class-level relation: explanations of the subject type can, under suitable conditions, be reformulated as explanations of the object type. KS4."@en .
+
+#################################################################
+#    Object properties
+#################################################################
+
+:hasQuality rdf:type owl:ObjectProperty , owl:InverseFunctionalProperty ;
+    rdfs:domain :Explanation ;
+    rdfs:range  :ExplanationQuality ;
+    rdfs:label "has quality"@en ;
+    rdfs:comment "Links an explanation to one of its qualities. Inverse functional because, as in DOLCE, a quality inheres in exactly one bearer: two explanations must never share the same quality individual. KS3, KS5."@en .
+
+:producesExplanation rdf:type owl:ObjectProperty ;
+    rdfs:domain :AISystem ;
+    rdfs:range  :AIExplanation ;
+    rdfs:label "produces explanation"@en ;
+    rdfs:comment "Links an AI system to an explanation it generates for its own predictions. KS1."@en .
+
+:isSuitableForAudience rdf:type owl:ObjectProperty ;
+    rdfs:domain :Explanation ;
+    rdfs:range  :Audience ;
+    rdfs:label "is suitable for audience"@en ;
+    rdfs:comment "Links an explanation to an audience it is suited for. KS5."@en .
+
+:isSuitableForTeaching rdf:type owl:ObjectProperty ;
+    rdfs:domain :Explanation ;
+    rdfs:range  :SubjectConcept ;
+    rdfs:label "is suitable for teaching"@en ;
+    rdfs:comment "Links an explanation to a subject concept it is suited to teach. KS6."@en .
+
+#################################################################
+#    Taxonomy: exactly three levels, a tree without diamonds
+#    (every class has exactly one named superclass)
+#
+#    Explanation
+#      ScientificExplanation : Causal-, Teleological-, DeductiveNomologicalExplanation
+#      AIExplanation         : Counterfactual-, FeatureAttribution-, ExampleBasedExplanation
+#    ExplanationQuality
+#      EpistemicQuality      : Testability, LogicalConsistency, EmpiricalAdequacy
+#      PragmaticQuality      : Simplicity, Concreteness, Comprehensibility
+#    Audience
+#      ExpertAudience        : Researcher, AIDeveloper
+#      NonExpertAudience     : Student, LayStakeholder
+#    SubjectConcept
+#      AbstractConcept       : MathematicalConcept, ComputationalConcept
+#    AISystem
+#      MachineLearningModel  : NeuralNetworkModel, DecisionTreeModel
+#################################################################
+
+#################################################################
+#    Branch 1: Explanation
+#################################################################
+
+:Explanation rdf:type owl:Class ;                                  # level 1
+    rdfs:label "Explanation"@en ;
+    rdfs:comment "A statement or structure that makes clear why or how a phenomenon or an outcome occurs."@en ;
+    :subsumedUnder dolce:non-agentive-social-object .
+
+:ScientificExplanation rdf:type owl:Class ;                        # level 2
+    rdfs:subClassOf :Explanation ;
+    rdfs:label "Scientific explanation"@en ;
+    skos:definition "A scientific explanation is an explanation that accounts for a natural phenomenon within the framework of scientific method."@en ;
+    rdfs:comment "KS3, KS4."@en .
+
+:CausalExplanation rdf:type owl:Class ;                            # level 3
+    rdfs:subClassOf :ScientificExplanation ;
+    rdfs:label "Causal explanation"@en ;
+    skos:definition "A causal explanation is a scientific explanation that identifies the cause or causes of the phenomenon to be explained."@en ;
+    :canBeReconstructedAs :DeductiveNomologicalExplanation ;
+    rdfs:comment "KS2, KS4. Can be recast as a DN explanation when a general causal law is available."@en .
+
+:TeleologicalExplanation rdf:type owl:Class ;                      # level 3
+    rdfs:subClassOf :ScientificExplanation ;
+    rdfs:label "Teleological explanation"@en ;
+    skos:definition "A teleological explanation is a scientific explanation that accounts for a phenomenon by its purpose or function."@en ;
+    :canBeReconstructedAs :CausalExplanation ;
+    rdfs:comment "KS4. Functional explanations can often be reconstructed causally, e.g. via selection history."@en .
+
+:DeductiveNomologicalExplanation rdf:type owl:Class ;              # level 3
+    rdfs:subClassOf :ScientificExplanation ;
+    rdfs:label "Deductive-nomological explanation"@en ;
+    skos:definition "A deductive-nomological explanation is a scientific explanation that derives the phenomenon logically from at least one general law together with initial conditions."@en ;
+    rdfs:comment "KS4. Hempel and Oppenheim's covering-law model."@en .
+
+# The three scientific explanation types are deliberately NOT declared disjoint:
+# the same explanation can be both causal and deductive-nomological.
+
+:AIExplanation rdf:type owl:Class ;                                # level 2
+    rdfs:subClassOf :Explanation ;
+    rdfs:label "AI explanation"@en ;
+    skos:definition "An AI explanation is an explanation that makes the output of an AI system understandable to a human."@en ;
+    rdfs:comment "KS1, KS2."@en .
+
+:CounterfactualExplanation rdf:type owl:Class ;                    # level 3
+    rdfs:subClassOf :AIExplanation ;
+    rdfs:label "Counterfactual explanation"@en ;
+    skos:definition "A counterfactual explanation is an AI explanation that states how the input would have to change for the AI system to produce a different output."@en ;
+    rdfs:comment "KS1, KS2. Unlike a causal explanation, it describes the behaviour of a model, not the cause of a real-world phenomenon."@en .
+
+:FeatureAttributionExplanation rdf:type owl:Class ;                # level 3
+    rdfs:subClassOf :AIExplanation ;
+    rdfs:label "Feature attribution explanation"@en ;
+    skos:definition "A feature attribution explanation is an AI explanation that assigns to each input feature a measure of how much it contributed to the output."@en ;
+    rdfs:comment "KS1. For example SHAP or LIME."@en .
+
+:ExampleBasedExplanation rdf:type owl:Class ;                      # level 3
+    rdfs:subClassOf :AIExplanation ;
+    rdfs:label "Example-based explanation"@en ;
+    skos:definition "An example-based explanation is an AI explanation that justifies an output by pointing to similar cases from the training data."@en ;
+    rdfs:comment "KS1."@en .
+
+#################################################################
+#    Branch 2: ExplanationQuality
+#################################################################
+
+:ExplanationQuality rdf:type owl:Class ;                           # level 1
+    rdfs:label "Explanation quality"@en ;
+    rdfs:comment "A quality that inheres in an explanation. Renamed from 'Property' to avoid confusion with rdf:Property."@en ;
+    :subsumedUnder dolce:abstract-quality .
+
+:EpistemicQuality rdf:type owl:Class ;                             # level 2
+    rdfs:subClassOf :ExplanationQuality ;
+    rdfs:label "Epistemic quality"@en ;
+    skos:definition "An epistemic quality is an explanation quality that concerns whether the explanation is justified as knowledge."@en ;
+    rdfs:comment "KS3."@en .
+
+:Testability rdf:type owl:Class ;                                  # level 3
+    rdfs:subClassOf :EpistemicQuality ;
+    rdfs:label "Testability"@en ;
+    skos:definition "Testability is an epistemic quality that holds when the explanation has consequences that can be checked by observation or experiment."@en .
+
+:LogicalConsistency rdf:type owl:Class ;                           # level 3
+    rdfs:subClassOf :EpistemicQuality ;
+    rdfs:label "Logical consistency"@en ;
+    skos:definition "Logical consistency is an epistemic quality that holds when the statements of the explanation do not contradict each other."@en .
+
+:EmpiricalAdequacy rdf:type owl:Class ;                            # level 3
+    rdfs:subClassOf :EpistemicQuality ;
+    rdfs:label "Empirical adequacy"@en ;
+    skos:definition "Empirical adequacy is an epistemic quality that holds when the explanation agrees with the available observations."@en .
+
+:PragmaticQuality rdf:type owl:Class ;                             # level 2
+    rdfs:subClassOf :ExplanationQuality ;
+    rdfs:label "Pragmatic quality"@en ;
+    skos:definition "A pragmatic quality is an explanation quality that concerns how well the explanation serves a particular recipient."@en ;
+    rdfs:comment "KS5."@en .
+
+:Simplicity rdf:type owl:Class ;                                   # level 3
+    rdfs:subClassOf :PragmaticQuality ;
+    rdfs:label "Simplicity"@en ;
+    skos:definition "Simplicity is a pragmatic quality that holds when the explanation uses few concepts and little technical vocabulary."@en .
+
+:Concreteness rdf:type owl:Class ;                                 # level 3
+    rdfs:subClassOf :PragmaticQuality ;
+    rdfs:label "Concreteness"@en ;
+    skos:definition "Concreteness is a pragmatic quality that holds when the explanation is illustrated with concrete examples, analogies or visualisations."@en .
+
+:Comprehensibility rdf:type owl:Class ;                            # level 3
+    rdfs:subClassOf :PragmaticQuality ;
+    rdfs:label "Comprehensibility"@en ;
+    skos:definition "Comprehensibility is a pragmatic quality that holds when the explanation can be understood by a recipient without specialist knowledge."@en .
+
+#################################################################
+#    Branch 3: Audience
+#################################################################
+
+:Audience rdf:type owl:Class ;                                     # level 1
+    rdfs:label "Audience"@en ;
+    rdfs:comment "A person to whom an explanation is directed. Modelled as individual persons, hence agentive physical object in DOLCE."@en ;
+    :subsumedUnder dolce:agentive-physical-object .
+
+:ExpertAudience rdf:type owl:Class ;                               # level 2
+    rdfs:subClassOf :Audience ;
+    rdfs:label "Expert audience"@en ;
+    skos:definition "An expert audience is an audience that has specialist knowledge of the domain of the explanation."@en .
+
+:Researcher rdf:type owl:Class ;                                   # level 3
+    rdfs:subClassOf :ExpertAudience ;
+    rdfs:label "Researcher"@en ;
+    skos:definition "A researcher is an expert audience who produces new knowledge in the domain through systematic investigation."@en .
+
+:AIDeveloper rdf:type owl:Class ;                                  # level 3
+    rdfs:subClassOf :ExpertAudience ;
+    rdfs:label "AI developer"@en ;
+    skos:definition "An AI developer is an expert audience who builds or trains AI systems."@en .
+
+:NonExpertAudience rdf:type owl:Class ;                            # level 2
+    rdfs:subClassOf :Audience ;
+    rdfs:label "Non-expert audience"@en ;
+    skos:definition "A non-expert audience is an audience that lacks specialist knowledge of the domain of the explanation."@en ;
+    rdfs:comment "KS5."@en .
+
+:Student rdf:type owl:Class ;                                      # level 3
+    rdfs:subClassOf :NonExpertAudience ;
+    rdfs:label "Student"@en ;
+    skos:definition "A student is a non-expert audience who is being taught the subject of the explanation."@en ;
+    rdfs:comment "KS6 (Mehdi's students)."@en .
+
+:LayStakeholder rdf:type owl:Class ;                               # level 3
+    rdfs:subClassOf :NonExpertAudience ;
+    rdfs:label "Lay stakeholder"@en ;
+    skos:definition "A lay stakeholder is a non-expert audience who is affected by the output of an AI system without having technical knowledge of it."@en ;
+    rdfs:comment "KS1 (Oswa's non-technical stakeholders)."@en .
+
+#################################################################
+#    Branch 4: SubjectConcept
+#################################################################
+
+:SubjectConcept rdf:type owl:Class ;                               # level 1
+    rdfs:label "Subject concept"@en ;
+    rdfs:comment "Subject matter that an explanation is meant to convey. Renamed from 'Concept' to avoid confusion with skos:Concept. Aligned with non-agentive social object rather than mental object, since a shared subject matter does not depend on one particular mind (this resolves the earlier TODO)."@en ;
+    :subsumedUnder dolce:non-agentive-social-object .
+
+:AbstractConcept rdf:type owl:Class ;                              # level 2
+    rdfs:subClassOf :SubjectConcept ;
+    rdfs:label "Abstract concept"@en ;
+    skos:definition "An abstract concept is a subject concept that has no direct physical counterpart that can be observed."@en ;
+    rdfs:comment "KS6."@en .
+
+:MathematicalConcept rdf:type owl:Class ;                          # level 3
+    rdfs:subClassOf :AbstractConcept ;
+    rdfs:label "Mathematical concept"@en ;
+    skos:definition "A mathematical concept is an abstract concept that belongs to mathematics."@en .
+
+:ComputationalConcept rdf:type owl:Class ;                         # level 3
+    rdfs:subClassOf :AbstractConcept ;
+    rdfs:label "Computational concept"@en ;
+    skos:definition "A computational concept is an abstract concept that belongs to programming or computer science."@en .
+
+#################################################################
+#    Branch 5: AISystem
+#################################################################
+
+:AISystem rdf:type owl:Class ;                                     # level 1
+    rdfs:label "AI system"@en ;
+    rdfs:comment "A software system that produces predictions or decisions from data. KS1."@en ;
+    :subsumedUnder dolce:non-agentive-social-object .
+
+:MachineLearningModel rdf:type owl:Class ;                         # level 2
+    rdfs:subClassOf :AISystem ;
+    rdfs:label "Machine learning model"@en ;
+    skos:definition "A machine learning model is an AI system whose behaviour is learned from training data."@en .
+
+:NeuralNetworkModel rdf:type owl:Class ;                           # level 3
+    rdfs:subClassOf :MachineLearningModel ;
+    rdfs:label "Neural network model"@en ;
+    skos:definition "A neural network model is a machine learning model built from layers of connected artificial neurons."@en .
+
+:DecisionTreeModel rdf:type owl:Class ;                            # level 3
+    rdfs:subClassOf :MachineLearningModel ;
+    rdfs:label "Decision tree model"@en ;
+    skos:definition "A decision tree model is a machine learning model that makes a prediction through a sequence of feature-based decisions arranged in a tree."@en .
+
+#################################################################
+#    Rules (class axioms)
+#################################################################
+
+# KS3: every scientific explanation must have these epistemic qualities.
+# As in P1, domain/range alone force nothing to exist, so restrictions are needed.
+:ScientificExplanation rdfs:subClassOf
+    [ rdf:type owl:Restriction ; owl:onProperty :hasQuality ; owl:someValuesFrom :Testability ] ,
+    [ rdf:type owl:Restriction ; owl:onProperty :hasQuality ; owl:someValuesFrom :LogicalConsistency ] ,
+    [ rdf:type owl:Restriction ; owl:onProperty :hasQuality ; owl:someValuesFrom :EmpiricalAdequacy ] .
+
+# KS5, rule 1: an explanation that is both simple and concrete is comprehensible.
+[ rdf:type owl:Class ;
+  owl:intersectionOf (
+      [ rdf:type owl:Restriction ; owl:onProperty :hasQuality ; owl:someValuesFrom :Simplicity ]
+      [ rdf:type owl:Restriction ; owl:onProperty :hasQuality ; owl:someValuesFrom :Concreteness ]
+  )
+] rdfs:subClassOf
+  [ rdf:type owl:Restriction ; owl:onProperty :hasQuality ; owl:someValuesFrom :Comprehensibility ] .
+
+# KS5, rule 2: a comprehensible explanation is suitable for some non-expert audience.
+[ rdf:type owl:Restriction ; owl:onProperty :hasQuality ; owl:someValuesFrom :Comprehensibility ]
+    rdfs:subClassOf
+  [ rdf:type owl:Restriction ; owl:onProperty :isSuitableForAudience ; owl:someValuesFrom :NonExpertAudience ] .
+
+#################################################################
+#    Disjointness (lets the reasoner catch modelling errors)
+#################################################################
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :Explanation :ExplanationQuality :Audience :SubjectConcept :AISystem ) ] .
+
+# KS2: an explanation of a model's output is not an explanation of a natural phenomenon.
+:ScientificExplanation owl:disjointWith :AIExplanation .
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :CounterfactualExplanation :FeatureAttributionExplanation :ExampleBasedExplanation ) ] .
+
+:EpistemicQuality owl:disjointWith :PragmaticQuality .
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :Testability :LogicalConsistency :EmpiricalAdequacy ) ] .
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :Simplicity :Concreteness :Comprehensibility ) ] .
+
+:ExpertAudience owl:disjointWith :NonExpertAudience .
+
+#################################################################
+#    Example individuals (for testing the rules with HermiT;
+#    can be removed before submission, like Train2 in P1)
+#################################################################
+
+# KS1: an AI system and an explanation it produces.
+:CreditScoringModel rdf:type owl:NamedIndividual , :NeuralNetworkModel ;
+    rdfs:label "Credit scoring model"@en ;
+    :producesExplanation :LoanDenialCounterfactual .
+
+# KS5 test: simple + concrete, so HermiT should infer that it is
+# comprehensible and suitable for some non-expert audience.
+:LoanDenialCounterfactual rdf:type owl:NamedIndividual , :CounterfactualExplanation ;
+    rdfs:label "\"Your loan would have been approved if your income had been 50 000 NOK higher.\""@en ;
+    :hasQuality :LoanDenialCounterfactual_simplicity , :LoanDenialCounterfactual_concreteness .
+
+:LoanDenialCounterfactual_simplicity   rdf:type owl:NamedIndividual , :Simplicity .
+:LoanDenialCounterfactual_concreteness rdf:type owl:NamedIndividual , :Concreteness .
+
+# KS6: an explanation suited for teaching an abstract concept.
+:Derivative rdf:type owl:NamedIndividual , :MathematicalConcept ;
+    rdfs:label "Derivative"@en .
+
+:PowerRuleDerivation rdf:type owl:NamedIndividual , :DeductiveNomologicalExplanation ;
+    rdfs:label "Deriving d/dx x^2 = 2x from the power rule"@en ;
+    :isSuitableForTeaching :Derivative .
