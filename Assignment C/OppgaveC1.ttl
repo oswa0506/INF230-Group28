@@ -1,0 +1,421 @@
+@prefix : <http://www.inf230.no/explainability#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+# NB: bruker DOLCE (full versjon / DOLCE-Lite), IKKE DOLCE-UltraLite (dul) -
+# oppgaven sier eksplisitt at dul har en annen struktur og ikke skal brukes.
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix ex: <http://www.inf230.no/explainability/data#> .
+@prefix dolce: <http://www.loa-cnr.it/ontologies/DOLCE-Lite.owl#> .
+
+# ingen tva olika Explanation-instanser far ha samma hasExplanationID
+:Explanation owl:hasKey ( :hasExplanationID ) .
+
+# INF230 - Oppgave C / Gruppe 28 (TBox fra B, utvidet i C.1, ABox i C.3)
+# Tema: Explainability and Explanations
+#
+# Dette er forsoket vart pa steg 1: en forste liste over konsepter og
+# relasjoner vi tror vi trenger for a kunne svare pa de 6 kompetanse-
+# sporsmalene (KS1-KS6) fra B1-dokumentet vart. Vi prover a holde det
+# minimalt - bare det som faktisk trengs for KS1-KS6, ikke mer.
+# Personaene vare: Oswa (AI-utvikler), Ilwaad (Forsker), Mehdi (Larer).
+
+<http://www.inf230.no/explainability> rdf:type owl:Ontology ;
+    rdfs:label "Explainability and Explanations Ontology"@en ;
+    rdfs:comment "Domeneontologi for forklaringer og forklarbarhet. INF230 Oppgave C, Gruppe 28."@en ;
+    dcterms:creator "Oswa", "Ilwaad", "Mehdi", "Varnan" .
+
+#################################################################
+#    Steg 2: DOLCE top-down alignment
+#################################################################
+# Bruker en egen annotation property for a vise hvilket DOLCE-universal
+# hver klasse hoerer under. Valgte a IKKE bruke ekte rdfs:subClassOf mot
+# DOLCE-klassene, siden vi ikke importerer hele DOLCE-filen inn i denne
+# ontologien (blir fort veldig tungt a jobbe med i Protege for en liten
+# gruppeoppgave) - men :subsumedUnder gjor koblingen eksplisitt og
+# etterprovbar, som er poenget med steg 2.
+
+:subsumedUnder rdf:type owl:AnnotationProperty ;
+rdfs:label "subsumedUnder"@en ;
+rdfs:comment "Peker til DOLCE-universalet denne klassen er subsumert under (steg 2, top-down design)."@en .
+
+#################################################################
+#    Steg 3: genus-differentia-definisjoner (bottom-up)
+#################################################################
+# For minst 5 konsepter skal vi gi en definisjon pa formen
+# "en X er en <genus proximus> som <differentia>", der genus proximus
+# MA vaere en klasse som allerede finnes i var egen ontologi (ikke bare
+# et DOLCE-universal - det ville vaert for abstrakt for domenet vart).
+
+:definition rdf:type owl:AnnotationProperty ;
+rdfs:label "definition"@en ;
+rdfs:comment "Genus-differentia-definisjon pa formen 'en X er en <genus> som <differentia>' (steg 3, bottom-up)."@en .
+
+
+
+#C1.b, 
+#################################################################
+#    NYTT: obligatoriske datatype properties
+#################################################################
+# Kravet: hver klasse MA ha minst en obligatorisk datatype property.
+# Den kan arves fra en superklasse, sa vi trenger IKKE en for hver av
+# de 9 klassene - det holder a definere en pa hver av de 4 rotklassene
+# (Explanation, Property, Audience, Concept); alle underklasser arver
+# den automatisk via rdfs:subClassOf.
+#
+# Hver property er owl:FunctionalProperty (hoyst en verdi per instans),
+# og "obligatorisk" (minst en verdi) uttrykkes med en owl:Restriction
+# lagt direkte pa rotklassen - se der klassen er definert lenger ned.
+
+
+
+:hasExplanationID rdf:type owl:DatatypeProperty, owl:FunctionalProperty ;
+rdfs:domain :Explanation ;
+rdfs:range xsd:string ;
+rdfs:label "hasExplanationID"@en .
+
+:hasDescription rdf:type owl:DatatypeProperty, owl:FunctionalProperty ;
+rdfs:domain :Explanation ;
+rdfs:range xsd:string ;
+rdfs:label "hasDescription"@en ;
+rdfs:comment "Tekstlig beskrivelse av forklaringen. Obligatorisk - arves av alle underklasser av Explanation."@en .
+
+:hasRatingLabel rdf:type owl:DatatypeProperty, owl:FunctionalProperty ;
+rdfs:domain :Property ;
+rdfs:range xsd:string ;
+rdfs:label "hasRatingLabel"@en ;
+rdfs:comment "Tekstetikett for egenskapen, f.eks. 'hoy'/'lav'. Obligatorisk - arves av alle underklasser av Property."@en .
+
+:hasAudienceName rdf:type owl:DatatypeProperty, owl:FunctionalProperty ;
+rdfs:domain :Audience ;
+rdfs:range xsd:string ;
+rdfs:label "hasAudienceName"@en ;
+rdfs:comment "Navn/betegnelse pa malgruppen. Obligatorisk datatype property pa Audience."@en .
+
+:hasConceptName rdf:type owl:DatatypeProperty, owl:FunctionalProperty ;
+rdfs:domain :Concept ;
+rdfs:range xsd:string ;
+rdfs:label "hasConceptName"@en ;
+rdfs:comment "Navn pa fagkonseptet som skal forklares. Obligatorisk datatype property pa Concept."@en .
+
+#################################################################
+#    Klasser (Steg 1)
+#################################################################
+
+# Explanation er rot-konseptet vart - alt annet i ontologien handler
+# om denne klassen pa en eller annen mate. Vi valgte a ha den bredt
+# definert forst, og saerskille undertyper lenger ned.
+
+:Explanation rdf:type owl:Class ;
+rdfs:label "Explanation"@en ;
+rdfs:comment "Rotklassen: en pastand eller struktur som klargjor hvorfor eller hvordan et fenomen skjer."@en ;
+    
+# DOLCE: Non-physical Endurant > Non-physical Object > Social Object.
+# Valgte Social Object (ikke Mental Object) fordi en forklaring er noe
+# som kan deles og forstas av flere - den lever ikke bare i ett hode,
+# den finnes "der ute" som noe felles (f.eks. en tekst, et resonnement).
+
+:subsumedUnder dolce:social-object ;
+
+# NYTT: gjor hasDescription obligatorisk for enhver Explanation-instans.
+rdfs:subClassOf [
+rdf:type owl:Restriction ;
+owl:onProperty :hasDescription ;
+owl:someValuesFrom xsd:string
+] ;
+
+# En förklaring utan någon målgrupp ger ingen mening. 
+rdfs:subClassOf [
+rdf:type owl:Restriction ;
+owl:onProperty :isSuitableForAudience ;
+owl:someValuesFrom :Audience
+] .
+
+
+# Her deler vi Explanation i to hovedgrener:
+# 1) ScientificExplanation - for Ilwaad sine sporsmal (KS3, KS4) om
+#    vitenskapelige forklaringstyper
+# 2) CounterfactualExplanation - star direkte under Explanation fordi
+#    den hoerer mer til XAI-siden (Oswa, KS1/KS2) enn til det rent
+#    vitenskapelige. Diskuterte i gruppa om den burde vaere under
+#    ScientificExplanation ogsa, men bestemte oss for at det blir for
+#    mye "diamond-aktig" struktur - og oppgaven sier eksplisitt
+#    "without diamonds", sa vi holder treet rent.
+
+:ScientificExplanation rdf:type owl:Class ;
+rdfs:subClassOf :Explanation ;
+rdfs:label "ScientificExplanation"@en ;
+rdfs:comment "En forklaring som gis innenfor rammene av vitenskapelig metode."@en ;
+# Arver Social Object fra Explanation - ingen grunn til a avvike her,
+# den er fortsatt noe delt/offentlig, bare med en vitenskapelig ramme rundt.
+:subsumedUnder dolce:social-object ;
+# Genus proximus = Explanation (finnes i ontologien var, jf. steg 3-krav).
+:definition "En ScientificExplanation er en Explanation som gis innenfor rammene av vitenskapelig metode."@en .
+
+# --- Ilwaad sin gren: de tre vitenskapelige forklaringstypene fra KS4 ---
+# KS4 spor hvordan disse tre henger sammen, sa vi la dem som sosken
+# under samme forelder (ScientificExplanation) - det gjor at "relatedTo"
+# relasjonen mellom dem gir mening semantisk.
+
+:CausalExplanation rdf:type owl:Class ;
+rdfs:subClassOf :ScientificExplanation ;
+rdfs:label "CausalExplanation"@en ;
+rdfs:comment "Forklaring som identifiserer arsaken(e) til det som skal forklares. Brukt i KS1, KS2 og KS4."@en ;
+:subsumedUnder dolce:social-object ;
+:definition "En CausalExplanation er en ScientificExplanation som identifiserer arsaken(e) til fenomenet som skal forklares."@en .
+
+:TeleologicalExplanation rdf:type owl:Class ;
+rdfs:subClassOf :ScientificExplanation ;
+rdfs:label "TeleologicalExplanation"@en ;
+rdfs:comment "Forklaring som begrunner et fenomen ut fra hensikt/funksjon. KS4."@en ;
+:subsumedUnder dolce:social-object ;
+:definition "En TeleologicalExplanation er en ScientificExplanation som begrunner fenomenet ut fra dets hensikt eller funksjon."@en .
+
+:DeductiveNomologicalExplanation rdf:type owl:Class ;
+rdfs:subClassOf :ScientificExplanation ;
+rdfs:label "DeductiveNomologicalExplanation"@en ;
+rdfs:comment "Forklaring som utleder resultatet fra en generell lov + initialbetingelser (Hempels D-N-modell). KS4."@en ;
+:subsumedUnder dolce:social-object ;
+:definition "En DeductiveNomologicalExplanation er en ScientificExplanation som utleder fenomenet logisk fra en generell lov sammen med initialbetingelser."@en .
+
+# --- Oswa sin gren: kontrafaktisk forklaring (KS1, KS2) ---
+# NB: dette er den ene undertypen som IKKE er en ScientificExplanation
+# i vart skjema - den handler om "hva hvis input var annerledes",
+# som er mer et XAI/ML-konsept enn en vitenskapsteoretisk kategori.
+
+:CounterfactualExplanation rdf:type owl:Class ;
+rdfs:subClassOf :Explanation ;
+rdfs:label "CounterfactualExplanation"@en ;
+rdfs:comment "Forklaring som viser hvordan utfallet ville vaert annerledes under et hypotetisk scenario. KS1, KS2."@en ;
+:subsumedUnder dolce:social-object ;
+:definition "En CounterfactualExplanation er en Explanation som viser hvordan utfallet ville vaert annerledes dersom en gitt betingelse hadde vaert annerledes."@en .
+
+# Property trengs for KS3 (hvilke egenskaper MA en vitenskapelig
+# forklaring ha) og KS5 (hva gjor en forklaring forstaelig). Etter steg 3
+# la vi til Comprehensibility som en egen underklasse (ikke bare et individ)
+# fordi vi trengte minst 5 genus-differentia-definisjoner, og Comprehensibility
+# er den kvalitetsegenskapen KS5 faktisk sporer om - resten (fidelity,
+# completeness osv.) droppet vi fortsatt siden ingen CQ trenger dem.
+
+:Property rdf:type owl:Class ;
+rdfs:label "Property"@en ;
+rdfs:comment "En egenskap som tilskrives en forklaring, f.eks. forstaelighet. KS3, KS5."@en ;
+    
+# DOLCE: Quality > Abstract Quality. Dette er IKKE en Physical Quality
+# (som f.eks. farge/vekt, ma inheres i noe fysisk) og heller ikke en
+# Temporal Quality - forstaelighet er en abstrakt egenskap som
+# tilskrives et sosialt objekt (Explanation).
+    
+:subsumedUnder dolce:abstract-quality ;
+
+# NYTT: gjor hasRatingLabel obligatorisk for enhver Property-instans.
+rdfs:subClassOf [
+rdf:type owl:Restriction ;
+owl:onProperty :hasRatingLabel ;
+owl:someValuesFrom xsd:string
+] .
+
+:Comprehensibility rdf:type owl:Class ;
+rdfs:subClassOf :Property ;
+rdfs:label "Comprehensibility"@en ;
+rdfs:comment "Graden av forstaelighet en forklaring har for en gitt mottaker. Svarer direkte pa KS5."@en ;
+:subsumedUnder dolce:abstract-quality ;
+
+# Genus proximus = Property (finnes i ontologien var).
+:definition "Comprehensibility er en Property som angir i hvilken grad en Explanation er forstaelig for en mottaker uten spesialkunnskap."@en .
+
+# Mehdi sitt perspektiv: han underviser og trenger a vite hvem
+# forklaringen er for.
+
+:Audience rdf:type owl:Class ;
+rdfs:label "Audience"@en ;
+rdfs:comment "En person eller gruppe som en forklaring er rettet mot. KS5."@en ;
+
+# DOLCE: Physical Endurant > Physical Object > Agentive Physical Object.
+# Ekte personer/grupper som mottar og aktivt tolker en forklaring -
+# "agentive" fordi de har (eller antas a ha) en mental tilstand/intensjon,
+# i motsetning til f.eks. en stein (bare Physical Object, ikke agentive).
+   
+:subsumedUnder dolce:agentive-physical-object ;
+# NYTT: gjor hasAudienceName obligatorisk for enhver Audience-instans.
+    
+rdfs:subClassOf [
+rdf:type owl:Restriction ;
+owl:onProperty :hasAudienceName ;
+owl:someValuesFrom xsd:string
+] ;
+
+# C1,d, varje målgrupp måste ha minst en forklaring som passar for den.
+rdfs:subClassOf [
+rdf:type owl:Restriction ;
+owl:onProperty :isAudienceFor ;
+owl:someValuesFrom :Explanation
+] .
+
+# Ogsa fra Mehdi (KS6) - hva slags fagstoff/konsept skal forklares
+# (f.eks. abstrakt vs konkret). Kalte den "Concept" for a matche
+# begrepsbruken i selve kompetansesporsmalet.
+:Concept rdf:type owl:Class ;
+rdfs:label "Concept"@en ;
+rdfs:comment "Fagstoffet/ideen som er malet for forklaringen, f.eks. i en pedagogisk sammenheng. KS6."@en ;
+    
+# DOLCE: Non-physical Endurant > Non-physical Object > Mental Object.
+# Diskuterte om dette burde vaere Social Object (som Explanation) siden
+# et konsept ogsa kan deles - men landet pa Mental Object fordi det
+# fagstoffet/ideen i seg selv (f.eks. "rekursjon") er noe som eksisterer
+# som en tanke/ide, mens Explanation-en om den er det delte, artikulerte
+# objektet. Usikre pa denne - noe a ta opp med gruppa.
+    
+    
+:subsumedUnder dolce:mental-object ;
+# NYTT: gjor hasConceptName obligatorisk for enhver Concept-instans.
+
+rdfs:subClassOf [
+rdf:type owl:Restriction ;
+owl:onProperty :hasConceptName ;
+owl:someValuesFrom xsd:string
+] .
+
+#################################################################
+#    Relasjoner (Steg 1)
+#################################################################
+
+# hasProperty: kobler en forklaring til en egenskap den har.
+# Trengs for a kunne svare pa KS3 (hvilke egenskaper MA finnes) og
+# KS5 (hvilken egenskap gjor noe forstaelig).
+
+#C1.a, En explanation kan ha flera property-instanser, men varje property  instanse kan bara ha en explanation.
+ 
+:hasProperty rdf:type owl:ObjectProperty, owl:InverseFunctionalProperty ;
+rdfs:domain :Explanation ;
+rdfs:range :Property ;
+rdfs:label "hasProperty"@en ;
+rdfs:comment "Kobler en forklaring til en egenskap den har (f.eks. forstaelighet). KS3, KS5."@en .
+
+# relatedTo: dette er relasjonen som direkte svarer pa KS4
+# ("hvordan er kausale, teleologiske og D-N forklaringer relatert?").
+# Gjorde den symmetrisk siden "relatert til" gar begge veier - hvis A
+# er relatert til B er B ogsa relatert til A. Kanskje for enkel til a
+# fange ALT som star i KS4, men den daekker i hvert fall pastanden om
+# at det finnes en relasjon.
+
+:relatedTo rdf:type owl:ObjectProperty ;
+rdf:type owl:SymmetricProperty ;
+rdfs:domain :ScientificExplanation ;
+rdfs:range :ScientificExplanation ;
+rdfs:label "relatedTo"@en ;
+rdfs:comment "Kobler vitenskapelige forklaringstyper til hverandre (kausal, teleologisk, D-N). KS4."@en .
+
+# isSuitableForAudience: for KS5 - hvilket publikum passer forklaringen for.
+
+:isSuitableForAudience rdf:type owl:ObjectProperty ;
+rdfs:domain :Explanation ;
+rdfs:range :Audience ;
+rdfs:label "isSuitableForAudience"@en ;
+rdfs:comment "Kobler en forklaring til et publikum den passer godt for. KS5."@en .
+
+# isSuitableForTeaching: for KS6 - hvilket konsept forklaringen egner
+# seg til a undervise.
+
+:isSuitableForTeaching rdf:type owl:ObjectProperty ;
+rdfs:domain :Explanation ;
+rdfs:range :Concept ;
+rdfs:label "isSuitableForTeaching"@en ;
+rdfs:comment "Kobler en forklaring til et konsept den egner seg til a undervise. KS6."@en .
+
+# TODO steg 2: Concept -> Mental Object er den vi er minst sikre pa
+# (se kommentar over). Ta det opp neste gruppemote. Relasjonene
+# (hasProperty, relatedTo osv.) har vi IKKE forsokt a subsumere under
+# DOLCE - DOLCE sin taxonomy er for objekter/universaler, ikke for
+# domenespesifikke relasjoner, sa det gir ikke mening a gjore det her.
+
+#C1.d
+:isAudienceFor rdf:type owl:ObjectProperty ;
+owl:inverseOf :isSuitableForAudience ;
+rdfs:domain :Audience ;
+rdfs:range :Explanation ;
+rdfs:label "isAudienceFor"@en ;
+# motsatt riktning av isSuitableForAudience, så att vi kan sätta ett krav pa Audience-sidan
+rdfs:comment "Den omvanda relationen till isSuitableForAudience."@en .
+
+#################################################################
+#    C.3: ABox (instansdata) - eget namespace ex:
+#################################################################
+# TBox (klasser/properties) ligger i : = http://www.inf230.no/explainability#
+# ABox (individer) ligger i ex: = http://www.inf230.no/explainability/data#
+# 12 individer: 4 forklaringer, 3 egenskaper, 3 malgrupper, 2 konsepter.
+
+# --- Malgrupper (Audience) ---
+
+ex:BankCustomers rdf:type owl:NamedIndividual, :Audience ;
+    rdfs:label "Bankkunder"@no ;
+    :hasAudienceName "Bankkunder som har sokt om lan" .
+
+ex:Researchers rdf:type owl:NamedIndividual, :Audience ;
+    rdfs:label "Forskere"@no ;
+    :hasAudienceName "Forskere og dataforskere" .
+
+ex:HighSchoolStudents rdf:type owl:NamedIndividual, :Audience ;
+    rdfs:label "VGS-elever"@no ;
+    :hasAudienceName "Elever pa videregaende skole" .
+
+# --- Konsepter (Concept) ---
+
+ex:Gravity rdf:type owl:NamedIndividual, :Concept ;
+    rdfs:label "Tyngdekraft"@no ;
+    :hasConceptName "Tyngdekraft og fritt fall" .
+
+ex:HumanBody rdf:type owl:NamedIndividual, :Concept ;
+    rdfs:label "Menneskekroppen"@no ;
+    :hasConceptName "Menneskekroppens organer og funksjoner" .
+
+# --- Egenskaper (Comprehensibility) ---
+# hasProperty er InverseFunctional, sa hver egenskap-instans
+# horer til noyaktig en forklaring.
+
+ex:LoanCF_Comprehensibility rdf:type owl:NamedIndividual, :Comprehensibility ;
+    rdfs:label "Forstaelighet - lanavslag"@no ;
+    :hasRatingLabel "hoy" .
+
+ex:SmokingCausal_Comprehensibility rdf:type owl:NamedIndividual, :Comprehensibility ;
+    rdfs:label "Forstaelighet - royking"@no ;
+    :hasRatingLabel "middels" .
+
+ex:FreeFallDN_Comprehensibility rdf:type owl:NamedIndividual, :Comprehensibility ;
+    rdfs:label "Forstaelighet - fritt fall"@no ;
+    :hasRatingLabel "lav" .
+
+# --- Forklaringer (Explanation) ---
+
+ex:LoanDenialCounterfactual rdf:type owl:NamedIndividual, :CounterfactualExplanation ;
+    rdfs:label "Kontrafaktisk forklaring av lanavslag"@no ;
+    :hasExplanationID "EXP-001" ;
+    :hasDescription "Lanet ville blitt innvilget dersom arsinntekten hadde vaert 50 000 kr hoyere." ;
+    :isSuitableForAudience ex:BankCustomers, ex:Researchers ;
+    :hasProperty ex:LoanCF_Comprehensibility .
+
+ex:SmokingCancerCausal rdf:type owl:NamedIndividual, :CausalExplanation ;
+    rdfs:label "Kausal forklaring av lungekreft"@no ;
+    :hasExplanationID "EXP-002" ;
+    :hasDescription "Royking forarsaker lungekreft fordi stoffer i royken skader DNA i lungecellene." ;
+    :isSuitableForAudience ex:Researchers, ex:HighSchoolStudents ;
+    :isSuitableForTeaching ex:HumanBody ;
+    :hasProperty ex:SmokingCausal_Comprehensibility ;
+    :relatedTo ex:HeartTeleological, ex:FreeFallDN .
+
+ex:HeartTeleological rdf:type owl:NamedIndividual, :TeleologicalExplanation ;
+    rdfs:label "Teleologisk forklaring av hjertet"@no ;
+    :hasExplanationID "EXP-003" ;
+    :hasDescription "Hjertet slar for a pumpe blod rundt i kroppen." ;
+    :isSuitableForAudience ex:HighSchoolStudents ;
+    :isSuitableForTeaching ex:HumanBody ;
+    :relatedTo ex:FreeFallDN .
+
+ex:FreeFallDN rdf:type owl:NamedIndividual, :DeductiveNomologicalExplanation ;
+    rdfs:label "D-N-forklaring av fritt fall"@no ;
+    :hasExplanationID "EXP-004" ;
+    :hasDescription "Steinen falt 4,9 m pa 1 s, utledet fra loven s = 1/2 g t^2 og initialbetingelsen v0 = 0." ;
+    :isSuitableForAudience ex:Researchers, ex:HighSchoolStudents ;
+    :isSuitableForTeaching ex:Gravity ;
+    :hasProperty ex:FreeFallDN_Comprehensibility .

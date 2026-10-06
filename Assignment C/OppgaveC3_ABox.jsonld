@@ -1,0 +1,195 @@
+{
+  "@context": {
+    "@vocab": "http://www.inf230.no/explainability#",
+    "ex": "http://www.inf230.no/explainability/data#",
+    "hasProperty": {
+      "@type": "@id"
+    },
+    "isSuitableForAudience": {
+      "@type": "@id"
+    },
+    "isSuitableForTeaching": {
+      "@type": "@id"
+    },
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "relatedTo": {
+      "@type": "@id"
+    },
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
+    {
+      "@id": "ex:Gravity",
+      "@type": [
+        "Concept",
+        "owl:NamedIndividual"
+      ],
+      "hasConceptName": "Tyngdekraft og fritt fall",
+      "rdfs:label": {
+        "@language": "no",
+        "@value": "Tyngdekraft"
+      }
+    },
+    {
+      "@id": "ex:HighSchoolStudents",
+      "@type": [
+        "Audience",
+        "owl:NamedIndividual"
+      ],
+      "hasAudienceName": "Elever pa videregaende skole",
+      "rdfs:label": {
+        "@language": "no",
+        "@value": "VGS-elever"
+      }
+    },
+    {
+      "@id": "ex:SmokingCausal_Comprehensibility",
+      "@type": [
+        "owl:NamedIndividual",
+        "Comprehensibility"
+      ],
+      "hasRatingLabel": "middels",
+      "rdfs:label": {
+        "@language": "no",
+        "@value": "Forstaelighet - royking"
+      }
+    },
+    {
+      "@id": "ex:LoanCF_Comprehensibility",
+      "@type": [
+        "Comprehensibility",
+        "owl:NamedIndividual"
+      ],
+      "hasRatingLabel": "hoy",
+      "rdfs:label": {
+        "@language": "no",
+        "@value": "Forstaelighet - lanavslag"
+      }
+    },
+    {
+      "@id": "ex:Researchers",
+      "@type": [
+        "owl:NamedIndividual",
+        "Audience"
+      ],
+      "hasAudienceName": "Forskere og dataforskere",
+      "rdfs:label": {
+        "@language": "no",
+        "@value": "Forskere"
+      }
+    },
+    {
+      "@id": "ex:FreeFallDN",
+      "@type": [
+        "owl:NamedIndividual",
+        "DeductiveNomologicalExplanation"
+      ],
+      "hasDescription": "Steinen falt 4,9 m pa 1 s, utledet fra loven s = 1/2 g t^2 og initialbetingelsen v0 = 0.",
+      "hasExplanationID": "EXP-004",
+      "hasProperty": "ex:FreeFallDN_Comprehensibility",
+      "isSuitableForAudience": [
+        "ex:HighSchoolStudents",
+        "ex:Researchers"
+      ],
+      "isSuitableForTeaching": "ex:Gravity",
+      "rdfs:label": {
+        "@language": "no",
+        "@value": "D-N-forklaring av fritt fall"
+      }
+    },
+    {
+      "@id": "ex:HumanBody",
+      "@type": [
+        "owl:NamedIndividual",
+        "Concept"
+      ],
+      "hasConceptName": "Menneskekroppens organer og funksjoner",
+      "rdfs:label": {
+        "@language": "no",
+        "@value": "Menneskekroppen"
+      }
+    },
+    {
+      "@id": "ex:HeartTeleological",
+      "@type": [
+        "TeleologicalExplanation",
+        "owl:NamedIndividual"
+      ],
+      "hasDescription": "Hjertet slar for a pumpe blod rundt i kroppen.",
+      "hasExplanationID": "EXP-003",
+      "isSuitableForAudience": "ex:HighSchoolStudents",
+      "isSuitableForTeaching": "ex:HumanBody",
+      "rdfs:label": {
+        "@language": "no",
+        "@value": "Teleologisk forklaring av hjertet"
+      },
+      "relatedTo": "ex:FreeFallDN"
+    },
+    {
+      "@id": "ex:BankCustomers",
+      "@type": [
+        "Audience",
+        "owl:NamedIndividual"
+      ],
+      "hasAudienceName": "Bankkunder som har sokt om lan",
+      "rdfs:label": {
+        "@language": "no",
+        "@value": "Bankkunder"
+      }
+    },
+    {
+      "@id": "ex:SmokingCancerCausal",
+      "@type": [
+        "CausalExplanation",
+        "owl:NamedIndividual"
+      ],
+      "hasDescription": "Royking forarsaker lungekreft fordi stoffer i royken skader DNA i lungecellene.",
+      "hasExplanationID": "EXP-002",
+      "hasProperty": "ex:SmokingCausal_Comprehensibility",
+      "isSuitableForAudience": [
+        "ex:Researchers",
+        "ex:HighSchoolStudents"
+      ],
+      "isSuitableForTeaching": "ex:HumanBody",
+      "rdfs:label": {
+        "@language": "no",
+        "@value": "Kausal forklaring av lungekreft"
+      },
+      "relatedTo": [
+        "ex:FreeFallDN",
+        "ex:HeartTeleological"
+      ]
+    },
+    {
+      "@id": "ex:FreeFallDN_Comprehensibility",
+      "@type": [
+        "Comprehensibility",
+        "owl:NamedIndividual"
+      ],
+      "hasRatingLabel": "lav",
+      "rdfs:label": {
+        "@language": "no",
+        "@value": "Forstaelighet - fritt fall"
+      }
+    },
+    {
+      "@id": "ex:LoanDenialCounterfactual",
+      "@type": [
+        "owl:NamedIndividual",
+        "CounterfactualExplanation"
+      ],
+      "hasDescription": "Lanet ville blitt innvilget dersom arsinntekten hadde vaert 50 000 kr hoyere.",
+      "hasExplanationID": "EXP-001",
+      "hasProperty": "ex:LoanCF_Comprehensibility",
+      "isSuitableForAudience": [
+        "ex:BankCustomers",
+        "ex:Researchers"
+      ],
+      "rdfs:label": {
+        "@language": "no",
+        "@value": "Kontrafaktisk forklaring av lanavslag"
+      }
+    }
+  ]
+}
