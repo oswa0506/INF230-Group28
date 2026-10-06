@@ -1,3 +1,6 @@
+# INF230 Gruppe 28 - Oppgave C
+# Gruppemedlemmer: Oswa Shahzad, Ilwaad Hassan Mahamed, Mahdi Heydari, Varnan Thillaimukilan
+
 @prefix : <http://www.inf230.no/explainability#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -24,7 +27,7 @@
 <http://www.inf230.no/explainability> rdf:type owl:Ontology ;
     rdfs:label "Explainability and Explanations Ontology"@en ;
     rdfs:comment "Domeneontologi for forklaringer og forklarbarhet. INF230 Oppgave C, Gruppe 28."@en ;
-    dcterms:creator "Oswa", "Ilwaad", "Mehdi", "Varnan" .
+    dcterms:creator "Oswa Shahzad", "Ilwaad Hassan Mahamed", "Mahdi Heydari", "Varnan Thillaimukilan" .
 
 #################################################################
 #    Steg 2: DOLCE top-down alignment
