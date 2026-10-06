@@ -1,0 +1,132 @@
+@prefix : <https://home.bawue.de/~horsch/teaching/inf230/lab/inf230-problem-1.html#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+#need this prefix for skos:definition (used for our genus-differentia definitions)
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+@base <https://home.bawue.de/~horsch/teaching/inf230/lab/inf230-problem-1.html#> .
+
+<https://home.bawue.de/~horsch/teaching/inf230/lab/inf230-problem-1.html>
+rdf:type owl:Ontology .
+
+<https://home.bawue.de/~horsch/teaching/inf230/lab/inf230-problem-1.html> owl:imports <file:///C:/Users/Mahdi/Desktop/Inf230/P1_Task2.ttl> .
+#defining the classes.
+
+:Service rdf:type owl:Class .
+
+:Equipment rdf:type owl:Class .
+
+
+#a trin trip is a service.
+:TrainTrip rdf:type owl:Class . 
+:TrainTrip rdfs:subClassOf :Service .
+
+
+#aristotelian definition for TrainTrip
+#genus = Service, differentia = run by train + has origin/destination
+:TrainTrip skos:definition "A train trip is a service (genus) that is run by a train and has both an origin and a destination station (differentia)."@en .
+
+
+#Rule: every train trip must be run by at least one train.
+:TrainTrip rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty :isRunBy ;
+    owl:someValuesFrom :Train
+] .
+
+
+#every trin trip must have an origin station (startStation)
+#again, domain/range alone dont force this to exist, so we need
+#a restriction to actually make it required
+:TrainTrip rdfs:subClassOf [
+    a owl:Restriction ;
+
+    #this one is about the startStation property
+    owl:onProperty :startStation ;
+
+    #means: must have SOME value that is a :TrainStation
+    owl:someValuesFrom :TrainStation
+] .
+
+#same thing but for the destination (endStation)
+:TrainTrip rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty :endStation ;
+    owl:someValuesFrom :TrainStation
+] .
+
+
+
+#Rule: if some equipment runs a train trip, it must be a train.
+#this is an intersection of two classes:
+#  - things that are Equipment
+#  - things that run SOME TrainTrip
+#and that intersection must be a subclass of Train
+[
+    a owl:Class ;
+    owl:intersectionOf (
+        :Equipment
+        [
+            a owl:Restriction ;
+            owl:onProperty :runs ;
+            owl:someValuesFrom :TrainTrip
+        ]
+    )
+] rdfs:subClassOf :Train .
+
+#a trin is a type og equipment
+:Train rdf:type owl:Class .
+:Train rdfs:subClassOf :Equipment .
+
+#aristotelian definition for Train
+#genus = Equipment, differentia = used to run train trips
+:Train skos:definition "A train is a piece of equipment (genus) that is used to run train trips (differentia)."@en .	
+
+
+#need a class for trian staion.
+:TrainStation rdf:type owl:Class .
+
+#TrainStation didnt have a genus/superclass before, so adding one
+:Location rdf:type owl:Class .
+:TrainStation rdfs:subClassOf :Location .
+
+#aristotelian definition for TrainStation
+#genus = Location, differentia = trains depart/arrive here
+:TrainStation skos:definition "A train station is a location (genus) where trains depart from and arrive at (differentia)."@en .
+
+
+#here we have relations.(object properties)
+
+#a service makes use of equipment
+:usesEquipment rdf:type owl:ObjectProperty . 
+:usesEquipment rdfs:domain :Service .
+:usesEquipment rdfs:range :Equipment .
+
+
+
+#this is the opposite direction of isRunBy.
+#if X isRunBy Y, that automatically means Y runs X
+:runs rdf:type owl:ObjectProperty .
+:runs owl:inverseOf :isRunBy .
+
+
+
+#"is run by" is more specific than "makes use of", so subpropertyof
+:isRunBy rdf:type owl:ObjectProperty .
+:isRunBy rdfs:subPropertyOf :usesEquipment .
+:isRunBy rdfs:domain :Service .
+:isRunBy rdfs:range :Equipment .
+
+
+#Start and end station must be train staion.
+:startStation rdf:type owl:ObjectProperty .
+:startStation rdfs:domain :TrainTrip .
+:startStation rdfs:range :TrainStation.
+
+:endStation rdf:type owl:ObjectProperty .
+:endStation rdfs:domain :TrainTrip .
+:endStation rdfs:range :TrainStation .

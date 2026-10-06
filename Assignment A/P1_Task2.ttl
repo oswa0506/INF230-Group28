@@ -1,0 +1,105 @@
+@prefix :     <https://home.bawue.de/~horsch/teaching/inf230/lab/inf230-problem-1.html#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml:  <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@base <https://home.bawue.de/~horsch/teaching/inf230/lab/inf230-problem-1.html#> .
+
+<https://home.bawue.de/~horsch/teaching/inf230/lab/inf230-problem-1-task2.html>
+rdf:type owl:Ontology .
+
+#Tbox extensions,the original TBox has no notion of coaches or of times,
+#so we add the minimum needed to express the ABox below
+
+#a coach is a new class
+:Coach rdf:type owl:Class .
+
+
+#every choach is kine of equipment too.
+:Coach rdfs:subClassOf :Equipment .
+
+
+#hascoach links a train to coaches, its an object property.
+:hasCoach rdf:type owl:ObjectProperty .
+
+
+#only a :trin can be on the left side of hasCoach.
+:hasCoach rdfs:domain :Train .
+
+#only a :coach can be the right side of hasCoach.
+:hasCoach rdfs:range :Coach .
+
+#departureTime links a trip to a raw value.
+:departureTime rdf:type owl:DatatypeProperty .
+
+#only a :TrainTrip can have a departurTime
+:departureTime rdfs:domain :TrainTrip .
+
+#the value of departurTime must be an xsd:dataTime.
+:departureTime rdfs:range xsd:dateTime .
+
+
+#same reasoning as departureTime, but for the arrival side.
+:arrivalTime rdf:type owl:DatatypeProperty .
+:arrivalTime rdfs:domain :TrainTrip .
+:arrivalTime rdfs:range xsd:dateTime .
+
+
+#Abox
+#staions, moss staion and stabekkstaion
+
+:MossStation rdf:type :TrainStation .
+:StabekkStation rdf:type :TrainStation .
+
+#adding a new station for this question, As stasjon
+:AsStation rdf:type :TrainStation .
+:AsStation rdfs:label "Ås stasjon" .
+
+#the train and its eight coaches.
+:Train1 rdf:type :Train .
+
+#Train1 hasCoach each of the 8 coaches below.
+#Turtle just lets us write them together seperated by commas.
+:Train1 :hasCoach :Coach1, :Coach2, :Coach3, :Coach4,
+                   :Coach5, :Coach6, :Coach7, :Coach8 .
+
+
+#each coach gets its own IRI.
+:Coach1 rdf:type :Coach .
+:Coach2 rdf:type :Coach .
+:Coach3 rdf:type :Coach .
+:Coach4 rdf:type :Coach .
+:Coach5 rdf:type :Coach .
+:Coach6 rdf:type :Coach .
+:Coach7 rdf:type :Coach .
+:Coach8 rdf:type :Coach .
+
+
+#the train trip.
+:Trip1 rdf:type :TrainTrip .
+:Trip1 :startStation    :MossStation .
+:Trip1 :endStation      :StabekkStation .
+:Trip1 :departureTime  "2026-09-16T09:54:00"^^xsd:dateTime .
+:Trip1 :arrivalTime    "2026-09-16T10:49:00"^^xsd:dateTime .
+:Trip1 :isRunBy        :Train1 .
+
+
+#Trip2: this one starts FROM As stasjon and goes to Moss
+#this covers the case where As is the ORIGIN
+:Trip2 rdf:type :TrainTrip .
+:Trip2 :startStation    :AsStation .
+:Trip2 :endStation      :MossStation .
+:Trip2 :departureTime  "2026-09-16T11:15:00"^^xsd:dateTime .
+:Trip2 :arrivalTime    "2026-09-16T12:03:00"^^xsd:dateTime .
+:Trip2 :isRunBy        :Train1 .
+
+
+#Trip3: this one goes FROM Stabekk TO As stasjon
+#this covers the case where As is the DESTINATION
+:Trip3 rdf:type :TrainTrip .
+:Trip3 :startStation    :StabekkStation .
+:Trip3 :endStation      :AsStation .
+:Trip3 :departureTime  "2026-09-16T13:20:00"^^xsd:dateTime .
+:Trip3 :arrivalTime    "2026-09-16T14:05:00"^^xsd:dateTime .
+:Trip3 :isRunBy        :Train1 .

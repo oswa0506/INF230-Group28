@@ -1,0 +1,124 @@
+@prefix : <http://www.inf230.no/explainability#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dolce: <http://www.loa-cnr.it/ontologies/DOLCE-Lite.owl#> . # DOLCE (Lite), ikke DOLCE-UltraLite/dul
+
+# Personaer: Oswa (AI-utvikler), Ilwaad (Forsker), Mehdi (Larer). Scope = KS1-KS6.
+
+<http://www.inf230.no/explainability> rdf:type owl:Ontology ;
+    rdfs:label "Explainability and Explanations Ontology"@en ;
+    rdfs:comment "Domeneontologi for forklaringer og forklarbarhet. INF230 Oppgave B, Gruppe 28."@en .
+
+#################################################################
+#    Annotation properties (steg 2 og 3)
+#################################################################
+
+:subsumedUnder rdf:type owl:AnnotationProperty ;
+    rdfs:label "subsumedUnder"@en ;
+    rdfs:comment "DOLCE-universal denne klassen er subsumert under (steg 2)."@en .
+
+:definition rdf:type owl:AnnotationProperty ;
+    rdfs:label "definition"@en ;
+    rdfs:comment "Genus-differentia-definisjon: 'en X er en <genus> som <differentia>' (steg 3)."@en .
+
+#################################################################
+#    Klasser - Nivaa 1 (rotklasser i taksonomien, steg 4)
+#################################################################
+
+:Explanation rdf:type owl:Class ; # Rotklasse, nivaa 1
+    rdfs:label "Explanation"@en ;
+    rdfs:comment "En pastand/struktur som klargjor hvorfor eller hvordan et fenomen skjer."@en ;
+    :subsumedUnder dolce:social-object .
+
+:Property rdf:type owl:Class ; # Rotklasse, nivaa 1
+    rdfs:label "Property"@en ;
+    rdfs:comment "En egenskap som tilskrives en forklaring. KS3, KS5."@en ;
+    :subsumedUnder dolce:abstract-quality .
+
+:Audience rdf:type owl:Class ; # Rotklasse, nivaa 1
+    rdfs:label "Audience"@en ;
+    rdfs:comment "Person/gruppe en forklaring er rettet mot. KS5."@en ;
+    :subsumedUnder dolce:agentive-physical-object .
+
+:Concept rdf:type owl:Class ; # Rotklasse, nivaa 1
+    rdfs:label "Concept"@en ;
+    rdfs:comment "Fagstoffet/ideen som er malet for forklaringen. KS6."@en ;
+    :subsumedUnder dolce:mental-object .
+
+#################################################################
+#    Klasser - Nivaa 2 (direkte undertyper)
+#################################################################
+
+:ScientificExplanation rdf:type owl:Class ; # Nivaa 2, under Explanation
+    rdfs:subClassOf :Explanation ;
+    rdfs:label "ScientificExplanation"@en ;
+    rdfs:comment "Forklaring gitt innenfor rammene av vitenskapelig metode."@en ;
+    :subsumedUnder dolce:social-object ;
+    :definition "En ScientificExplanation er en Explanation som gis innenfor rammene av vitenskapelig metode."@en .
+
+:CounterfactualExplanation rdf:type owl:Class ; # Nivaa 2, under Explanation (ikke ScientificExplanation - unngar diamond)
+    rdfs:subClassOf :Explanation ;
+    rdfs:label "CounterfactualExplanation"@en ;
+    rdfs:comment "Viser hvordan utfallet ville vaert annerledes under et hypotetisk scenario. KS1, KS2."@en ;
+    :subsumedUnder dolce:social-object ;
+    :definition "En CounterfactualExplanation er en Explanation som viser hvordan utfallet ville vaert annerledes dersom en gitt betingelse hadde vaert annerledes."@en .
+
+:Comprehensibility rdf:type owl:Class ; # Nivaa 2, under Property
+    rdfs:subClassOf :Property ;
+    rdfs:label "Comprehensibility"@en ;
+    rdfs:comment "Grad av forstaelighet en forklaring har for en gitt mottaker. KS5."@en ;
+    :subsumedUnder dolce:abstract-quality ;
+    :definition "Comprehensibility er en Property som angir i hvilken grad en Explanation er forstaelig for en mottaker uten spesialkunnskap."@en .
+
+#################################################################
+#    Klasser - Nivaa 3 (sub-subklasser, bunnen av treet - ikke dypere)
+#################################################################
+
+:CausalExplanation rdf:type owl:Class ; # Nivaa 3, under ScientificExplanation
+    rdfs:subClassOf :ScientificExplanation ;
+    rdfs:label "CausalExplanation"@en ;
+    rdfs:comment "Identifiserer arsaken(e) til fenomenet. KS1, KS2, KS4."@en ;
+    :subsumedUnder dolce:social-object ;
+    :definition "En CausalExplanation er en ScientificExplanation som identifiserer arsaken(e) til fenomenet som skal forklares."@en .
+
+:TeleologicalExplanation rdf:type owl:Class ; # Nivaa 3, under ScientificExplanation
+    rdfs:subClassOf :ScientificExplanation ;
+    rdfs:label "TeleologicalExplanation"@en ;
+    rdfs:comment "Begrunner fenomenet ut fra hensikt/funksjon. KS4."@en ;
+    :subsumedUnder dolce:social-object ;
+    :definition "En TeleologicalExplanation er en ScientificExplanation som begrunner fenomenet ut fra dets hensikt eller funksjon."@en .
+
+:DeductiveNomologicalExplanation rdf:type owl:Class ; # Nivaa 3, under ScientificExplanation
+    rdfs:subClassOf :ScientificExplanation ;
+    rdfs:label "DeductiveNomologicalExplanation"@en ;
+    rdfs:comment "Utleder resultatet fra en generell lov + initialbetingelser (Hempel). KS4."@en ;
+    :subsumedUnder dolce:social-object ;
+    :definition "En DeductiveNomologicalExplanation er en ScientificExplanation som utleder fenomenet logisk fra en generell lov sammen med initialbetingelser."@en .
+
+#################################################################
+#    Relasjoner (steg 1)
+#################################################################
+
+:hasProperty rdf:type owl:ObjectProperty ;
+    rdfs:domain :Explanation ; rdfs:range :Property ;
+    rdfs:label "hasProperty"@en ;
+    rdfs:comment "Forklaring -> egenskap den har. KS3, KS5."@en .
+
+:relatedTo rdf:type owl:ObjectProperty, owl:SymmetricProperty ;
+    rdfs:domain :ScientificExplanation ; rdfs:range :ScientificExplanation ;
+    rdfs:label "relatedTo"@en ;
+    rdfs:comment "Kobler vitenskapelige forklaringstyper til hverandre. KS4."@en .
+
+:isSuitableForAudience rdf:type owl:ObjectProperty ;
+    rdfs:domain :Explanation ; rdfs:range :Audience ;
+    rdfs:label "isSuitableForAudience"@en ;
+    rdfs:comment "Forklaring -> publikum den passer for. KS5."@en .
+
+:isSuitableForTeaching rdf:type owl:ObjectProperty ;
+    rdfs:domain :Explanation ; rdfs:range :Concept ;
+    rdfs:label "isSuitableForTeaching"@en ;
+    rdfs:comment "Forklaring -> konsept den egner seg til a undervise. KS6."@en .
+
+# TODO: Concept -> Mental Object (DOLCE) er usikker, ta opp pa gruppemote.

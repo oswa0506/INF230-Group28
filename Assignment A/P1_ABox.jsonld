@@ -1,0 +1,77 @@
+{
+  "@context": {
+    "@vocab": "https://home.bawue.de/~horsch/teaching/inf230/lab/inf230-problem-1.html#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "startStation": { "@type": "@id" },
+    "endStation": { "@type": "@id" },
+    "isRunBy": { "@type": "@id" },
+    "hasCoach": { "@type": "@id", "@container": "@set" },
+    "departureTime": { "@type": "xsd:dateTime" },
+    "arrivalTime": { "@type": "xsd:dateTime" }
+  },
+  "@graph": [
+    {
+      "@id": "MossStation",
+      "@type": "TrainStation"
+    },
+    {
+      "@id": "StabekkStation",
+      "@type": "TrainStation"
+    },
+    {
+      "@id": "Train1",
+      "@type": "Train",
+      "hasCoach": [
+        "Coach1",
+        "Coach2",
+        "Coach3",
+        "Coach4",
+        "Coach5",
+        "Coach6",
+        "Coach7",
+        "Coach8"
+      ]
+    },
+    {
+      "@id": "Coach1",
+      "@type": "Coach"
+    },
+    {
+      "@id": "Coach2",
+      "@type": "Coach"
+    },
+    {
+      "@id": "Coach3",
+      "@type": "Coach"
+    },
+    {
+      "@id": "Coach4",
+      "@type": "Coach"
+    },
+    {
+      "@id": "Coach5",
+      "@type": "Coach"
+    },
+    {
+      "@id": "Coach6",
+      "@type": "Coach"
+    },
+    {
+      "@id": "Coach7",
+      "@type": "Coach"
+    },
+    {
+      "@id": "Coach8",
+      "@type": "Coach"
+    },
+    {
+      "@id": "Trip1",
+      "@type": "TrainTrip",
+      "startStation": "MossStation",
+      "endStation": "StabekkStation",
+      "departureTime": "2026-09-16T09:54:00",
+      "arrivalTime": "2026-09-16T10:49:00",
+      "isRunBy": "Train1"
+    }
+  ]
+}
