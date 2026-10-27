@@ -1,21 +1,51 @@
---INF230 Gruppe 28 - Oppgave D (SQL)
+-- INF230 Gruppe 28 - Oppgave D
 -- Gruppemedlemmer: Oswa Shahzad, Ilwaad Hassan Mahamed, Mahdi Heydari, Varnan Thillaimukilan
 -- Tema: Explainability and Explanations (kunnskapsgrafen fra oppgave C)
 
--- =====================================================================
--- D.1 Tabellstruktur (intension)
--- =====================================================================
--- Klassehierarkiet under Explanation er flatet ut til kolonnen
--- explanation.explanation_type (CHECK-begrenset til de fire undertypene).
+-- =========================================
+-- D.1 Tabellstruktur
+-- =========================================
+-- PK = primaernøkkel, FK = fremmednøkkel
 --
--- explanation(explanation_id PK, description, explanation_type)
--- audience(audience_id PK, label, audience_name)
--- concept(concept_id PK, label, concept_name)
--- comprehensibility(property_id PK, label, rating_label,
---                   explanation_id FK UNIQUE NOT NULL)
---     -> hasProperty er inverse functional: en egenskap hoerer til noyaktig
---        en forklaring, derfor FK + UNIQUE her (1:N fra explanation).
--- explanation_audience(explanation_id FK, audience_id FK)   isSuitableForAudience (N:M)
--- explanation_concept(explanation_id FK, concept_id FK)     isSuitableForTeaching (N:M)
--- related_to(explanation_id_1 FK, explanation_id_2 FK)      relatedTo (symmetrisk N:M,
---     lagres en gang per par med id_1 < id_2)
+-- TABELL: explanation
+--   explanation_id     PK    (hasExplanationID, f.eks. EXP-001)
+--   description              (hasDescription)
+--   explanation_type         (Counterfactual / Causal / Teleological / DeductiveNomological)
+--
+-- TABELL: audience
+--   audience_id        PK
+--   label
+--   audience_name            (hasAudienceName)
+
+-- TABELL: concept
+--   concept_id         PK
+--   label
+--   concept_name             (hasConceptName)
+
+-- TABELL: comprehensibility
+--   property_id        PK
+--   label
+--   rating_label             (hasRatingLabel)
+--   explanation_id     FK -> explanation   (hasProperty)
+--
+-- TABELL: explanation_audience   (isSuitableForAudience)
+--   explanation_id     PK, FK -> explanation
+--   audience_id        PK, FK -> audience
+--
+-- TABELL: explanation_concept    (isSuitableForTeaching)
+--   explanation_id     PK, FK -> explanation
+--   concept_id         PK, FK -> concept
+--
+-- TABELL: related_to             (relatedTo)
+--   explanation_id_1   PK, FK -> explanation
+--   explanation_id_2   PK, FK -> explanation
+--
+-- RELASJONER
+--   explanation 1 --- N comprehensibility   (hver egenskap hoerer til en forklaring)
+--   explanation N --- M audience            (via explanation_audience)
+--   explanation N --- M concept             (via explanation_concept)
+--   explanation N --- M explanation         (via related_to)
+--
+-- VALG
+--   - Undertypene av Explanation er samlet i en kolonne (explanation_type).
+--   - relatedTo er symmetrisk, derfor lagres hvert par bare en gang.
